@@ -28,7 +28,7 @@ INFO 65730 --- [-worker-nio-2-1] c.l.a.i.common.JavaVersionSpecific       : Usin
 
 ```
 
-- Call RPC
+- execute grpc
 
 ```bash
 $ grpcurl -plaintext -d '{"message":"horiga"}' 127.0.0.1:8080 org.horiga.study.armeria.grpc.v1.HelloService/SayHello
@@ -37,6 +37,32 @@ $ grpcurl -plaintext -d '{"message":"horiga"}' 127.0.0.1:8080 org.horiga.study.a
   }
 ```
 
+- start MySQL with docker
+
+```bash
+$ cd docker
+$ docker-compose up
+```
+
+> spring r2dbc properties
+> ```$xslt
+> spring.r2dbc.url=r2dbc:pool:mysql://127.0.0.1:3306/demo
+> spring.r2dbc.username=test
+> spring.r2dbc.password=test
+> spring.r2dbc.pool.initial-size=10
+> spring.r2dbc.pool.max-size=50
+> spring.r2dbc.pool.max-idle-time=30s
+> spring.r2dbc.pool.validation-query=SELECT 1
+> ``` 
+
+- execute grpc
+
+```bash
+grpcurl -plaintext -d '{"type":"general"}' 127.0.0.1:8080 org.horiga.study.armeria.grpc.v1.TestService/Select
+{
+  "filter_type": "hogehoge"
+}
+```
 
 ### Kotlin
 
@@ -64,5 +90,35 @@ class HelloService: ReactorHelloServiceGrpc.HelloServiceImplBase() {
         Mono.just(HelloResponse.newBuilder().setMessage("Hello, ${thisRequest.message}").build())
     }
 }
+```
 
+```Kotlin
+@Service
+class TestService(
+    val r2dbcRepository: TestR2dbcRepository
+) : ReactorTestServiceGrpc.TestServiceImplBase() {
+    companion object {
+        val log = LoggerFactory.getLogger(TestService::class.java)!!
+    }
+
+    override fun select(
+        request: Mono<SelectRequest>
+    ): Mono<SelectResponse> = request.flatMap { thisRequest ->
+        r2dbcRepository.findByTypes(thisRequest.type)
+            .timeout(Duration.ofMillis(3000))
+            .doOnError { err -> log.error("failed to select from test table. type=${thisRequest.type}", err) }
+            .onErrorResume { err ->
+                log.warn("onErrorResume, r2dbc, findByTypes", err)
+                Flux.empty()
+            }
+            .map { it.toMessage() }
+            .collectList()
+            .map { items ->
+                SelectResponse.newBuilder()
+                    .setFilterType(thisRequest.type)
+                    .addAllItems(items)
+                    .build()
+            }
+    }
+}
 ```

@@ -14,3 +14,18 @@ message HelloRequest {
 message HelloResponse {
     string message = 1;
 }
+
+// -- user
+
+service TestService {
+    rpc Select(SelectRequest) returns (SelectResponse);
+}
+
+message SelectRequest {
+    string type = 1;
+}
+
+message SelectResponse {
+    string filter_type = 1;
+    repeated TestMessage items = 2;
+}

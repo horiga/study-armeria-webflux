@@ -1,0 +1,9 @@
+SET CHARSET utf8mb4;
+
+CREATE TABLE IF NOT EXISTS `test` (
+  `id`   VARCHAR(50) NOT NULL,
+  `name` VARCHAR(20) NOT NULL,
+  `type` VARCHAR(10) NOT NULL,
+  `created_at` DATETIME NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

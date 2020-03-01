@@ -26,13 +26,19 @@ repositories {
 
 dependencies {
 
+	annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
+
 	// Armeria
 	implementation("com.linecorp.armeria:armeria-spring-boot-webflux-starter")
 	implementation("com.linecorp.armeria:armeria-grpc")
 
 	// spring-boot
-	// implementation("org.springframework.boot:spring-boot-starter-webflux")
-	// implementation("org.springframework.boot.experimental:spring-boot-starter-data-r2dbc")
+	// implementation("org.springframework.boot:spring-boot-starter-webflux") - Note: armeria-spring-boot-webflux
+	implementation("org.springframework.boot.experimental:spring-boot-starter-data-r2dbc")
+
+	// mysql
+	implementation("com.github.jasync-sql:jasync-r2dbc-mysql:1.0.14")
+	implementation("io.r2dbc:r2dbc-pool:0.8.1.RELEASE")
 
 	// Reactor
 	implementation("io.projectreactor.addons:reactor-extra:3.3.2.RELEASE")
