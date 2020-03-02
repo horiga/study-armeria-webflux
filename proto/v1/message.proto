@@ -1,8 +1,14 @@
 syntax = "proto3";
 package org.horiga.study.armeria.grpc.v1;
 
+enum MessageTypes {
+    UNSPECIFIED = 0;
+    GENERAL     = 1;
+    NORMAL      = 2;
+}
+
 message TestMessage {
     string id = 1;
     string name = 2;
-    string type = 3;
+    MessageTypes type = 3;
 }

@@ -27,7 +27,7 @@ data class Test(
     fun toMessage() = Message.TestMessage.newBuilder()
             .setId(this.id)
             .setName(this.name)
-            .setType(this.type)
+            .setType(Message.MessageTypes.valueOf(this.name.toUpperCase()))
             .build()
 }
 

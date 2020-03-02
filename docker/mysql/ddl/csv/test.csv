@@ -1,6 +1,6 @@
 id,name,type,created_at
 1,foo,general,2020-03-01 10:00:00
 2,bar,general,2020-03-02 10:00:00
-3,hoge,user,2020-03-01 10:00:00
-4,fuga,user,2020-03-01 10:00:00
-5,piyo,user,2020-03-01 10:00:00
+3,hoge,normal,2020-03-01 10:00:00
+4,fuga,normal,2020-03-01 10:00:00
+5,piyo,normal,2020-03-01 10:00:00

@@ -22,10 +22,10 @@ service TestService {
 }
 
 message SelectRequest {
-    string type = 1;
+    MessageTypes type = 1;
 }
 
 message SelectResponse {
-    string filter_type = 1;
+    MessageTypes filter_type = 1;
     repeated TestMessage items = 2;
 }
