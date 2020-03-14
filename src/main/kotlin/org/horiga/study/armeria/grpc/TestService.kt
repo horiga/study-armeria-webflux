@@ -1,8 +1,3 @@
-/*
- * Copyright (c) 2020 LINE Corporation. All rights reserved.
- * LINE Corporation PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
- */
-
 package org.horiga.study.armeria.grpc
 
 import io.grpc.Status
@@ -33,18 +28,15 @@ class TestService(
         if (thisRequest.type == Message.MessageTypes.UNRECOGNIZED ||
             thisRequest.type == Message.MessageTypes.UNSPECIFIED
         ) {
-            return@flatMap Mono.error<SelectResponse>(
+            return@flatMap Mono.error(
                 StatusRuntimeException(Status.INVALID_ARGUMENT.withDescription("invalid type values"))
             )
         }
         r2dbcRepository.findByTypes(thisRequest.type.name.toLowerCase())
             .timeout(Duration.ofMillis(3000))
-            .doOnError { err -> log.error("failed to select from test table. type=${thisRequest.type}", err) }
-            .onErrorResume { err ->
-                log.warn("onErrorResume, r2dbc, findByTypes", err)
-                Flux.empty()
-            }
+            .switchIfEmpty(Flux.empty())
             .map { it.toMessage() }
+            .doOnError { err -> log.error("failed to select from test table. type=${thisRequest.type}", err) }
             .onErrorResume { err ->
                 log.error("handle errors!!", err)
                 val status = when {
