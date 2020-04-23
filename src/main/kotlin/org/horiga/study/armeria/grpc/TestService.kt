@@ -1,7 +1,7 @@
 package org.horiga.study.armeria.grpc
 
-import io.grpc.Status
 import io.grpc.Status.INVALID_ARGUMENT
+import io.grpc.Status.UNKNOWN
 import io.grpc.StatusRuntimeException
 import org.horiga.study.armeria.grpc.v1.Message
 import org.horiga.study.armeria.grpc.v1.ReactorTestServiceGrpc
@@ -28,37 +28,33 @@ class TestService(
     override fun select(
         request: Mono<SelectRequest>
     ): Mono<SelectResponse> = request
-            .handle { r, sink: SynchronousSink<SelectRequest> ->
-                if (r.type != Message.MessageTypes.GENERAL && r.type != Message.MessageTypes.NORMAL)
-                    sink.error(INVALID_ARGUMENT.withDescription("'type' parameter ignored")
-                                   .asRuntimeException())
-                else sink.next(r)
-            }
-            .flatMap { r ->
-                r2dbcRepository.findByTypes(r.type.name.toLowerCase())
-                    .timeout(Duration.ofMillis(3000))
-                    .switchIfEmpty(Flux.empty())
-                    .doOnError { err ->
-                        log.error(
-                            "Failed to select from test table. type=${r.type}",
-                            err
-                        )
+        .handle { r, sink: SynchronousSink<SelectRequest> ->
+            if (r.type != Message.MessageTypes.GENERAL && r.type != Message.MessageTypes.NORMAL)
+                sink.error(
+                    INVALID_ARGUMENT.withDescription("'type' parameter ignored")
+                        .asRuntimeException()
+                )
+            else sink.next(r)
+        }
+        .flatMap { r ->
+            r2dbcRepository.findByTypes(r.type.name.toLowerCase())
+                .timeout(Duration.ofMillis(3000))
+                .switchIfEmpty(Flux.empty())
+                .onErrorResume { err ->
+                    val grpcErrorStatus = when (err) {
+                        is IllegalArgumentException -> INVALID_ARGUMENT
+                        else -> UNKNOWN.withDescription(err.message)
                     }
-                    .onErrorResume { err ->
-                        val grpcErrorStatus = when (err) {
-                            is IllegalArgumentException -> INVALID_ARGUMENT.withDescription("hoge")
-                            else -> Status.UNKNOWN.withDescription(err.message)
-                        }
-                        log.warn("Handle errors, message=${err.message}, grpc.status=${grpcErrorStatus}", err)
-                        Mono.error(grpcErrorStatus.asRuntimeException())
-                    }
-                    .map { entity -> entity.toMessage() }
-                    .collectList()
-                    .map { messages ->
-                        SelectResponse.newBuilder()
-                            .setFilterType(r.type)
-                            .addAllItems(messages)
-                            .build()
-                    }
-            } // request.flatMap
+                    log.warn("Handle errors, message=${err.message}, grpc.status=${grpcErrorStatus}", err)
+                    Mono.error(grpcErrorStatus.asRuntimeException())
+                }
+                .map { entity -> entity.toMessage() }
+                .collectList()
+                .map { messages ->
+                    SelectResponse.newBuilder()
+                        .setFilterType(r.type)
+                        .addAllItems(messages)
+                        .build()
+                }
+        } // request.flatMap
 }
