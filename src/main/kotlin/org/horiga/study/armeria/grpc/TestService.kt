@@ -8,7 +8,6 @@ import org.horiga.study.armeria.grpc.v1.ReactorTestServiceGrpc
 import org.horiga.study.armeria.grpc.v1.Service.SelectRequest
 import org.horiga.study.armeria.grpc.v1.Service.SelectResponse
 import org.horiga.study.armeria.repository.TestR2dbcRepository
-import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
@@ -19,10 +18,6 @@ import java.time.Duration
 class TestService(
     val r2dbcRepository: TestR2dbcRepository
 ) : ReactorTestServiceGrpc.TestServiceImplBase() {
-
-    companion object {
-        val log = LoggerFactory.getLogger(TestService::class.java)!!
-    }
 
     @Throws(StatusRuntimeException::class)
     override fun select(
@@ -42,10 +37,9 @@ class TestService(
                 .switchIfEmpty(Flux.empty())
                 .onErrorResume { err ->
                     val grpcErrorStatus = when (err) {
-                        is IllegalArgumentException -> INVALID_ARGUMENT
+                        is IllegalArgumentException -> INVALID_ARGUMENT.withDescription("<test>")
                         else -> UNKNOWN.withDescription(err.message)
                     }
-                    log.warn("Handle errors, message=${err.message}, grpc.status=${grpcErrorStatus}", err)
                     Mono.error(grpcErrorStatus.asRuntimeException())
                 }
                 .map { entity -> entity.toMessage() }
