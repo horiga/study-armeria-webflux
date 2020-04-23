@@ -20,17 +20,20 @@ data class Test(
     var type: String
 ) {
     fun toMessage() = Message.TestMessage.newBuilder()
-            .setId(this.id)
-            .setName(this.name)
-            .setType(Message.MessageTypes.valueOf(this.name.toUpperCase()))
-            .build()
+        .setId(this.id)
+        .setName(this.name)
+        .setType(Message.MessageTypes.valueOf(this.type.toUpperCase()))
+        .build()!!
 }
 
 @Repository
 interface TestR2dbcRepository : R2dbcRepository<Test, String> {
 
     @Query("""
-       SELECT id, name, type FROM test WHERE type = :type
+       SELECT 
+        id, name, type 
+       FROM test 
+       WHERE type = :type
     """)
     fun findByTypes(@Param("type") type: String): Flux<Test>
 }

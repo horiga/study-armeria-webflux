@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.linecorp.armeria.common.logging.LogLevel
 import com.linecorp.armeria.server.docs.DocService
 import com.linecorp.armeria.server.grpc.GrpcService
 import com.linecorp.armeria.server.logging.AccessLogWriter
@@ -36,8 +37,15 @@ class ArmeriaConfiguration {
         ArmeriaServerConfigurator { sb ->
             sb.accessLogWriter(AccessLogWriter.combined(), false)
             sb.serviceUnder("/docs", DocService())
-            sb.decorator(LoggingService.newDecorator())
-            sb.service(GrpcService.builder()
+            sb.decorator(
+                LoggingService.builder()
+                    .requestLogLevel(LogLevel.DEBUG)
+                    .successfulResponseLogLevel(LogLevel.DEBUG)
+                    .failureResponseLogLevel(LogLevel.WARN)
+                    .newDecorator()
+            )
+            sb.service(
+                GrpcService.builder()
                     .addServices(bindableServices)
                     .addService(ProtoReflectionService.newInstance())
                     .enableUnframedRequests(true)

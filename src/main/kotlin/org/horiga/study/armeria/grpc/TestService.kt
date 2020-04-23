@@ -1,6 +1,7 @@
 package org.horiga.study.armeria.grpc
 
 import io.grpc.Status
+import io.grpc.Status.INVALID_ARGUMENT
 import io.grpc.StatusRuntimeException
 import org.horiga.study.armeria.grpc.v1.Message
 import org.horiga.study.armeria.grpc.v1.ReactorTestServiceGrpc
@@ -11,12 +12,14 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import reactor.core.publisher.SynchronousSink
 import java.time.Duration
 
 @Service
 class TestService(
     val r2dbcRepository: TestR2dbcRepository
 ) : ReactorTestServiceGrpc.TestServiceImplBase() {
+
     companion object {
         val log = LoggerFactory.getLogger(TestService::class.java)!!
     }
@@ -24,33 +27,38 @@ class TestService(
     @Throws(StatusRuntimeException::class)
     override fun select(
         request: Mono<SelectRequest>
-    ): Mono<SelectResponse> = request.flatMap { thisRequest ->
-        if (thisRequest.type == Message.MessageTypes.UNRECOGNIZED ||
-            thisRequest.type == Message.MessageTypes.UNSPECIFIED
-        ) {
-            return@flatMap Mono.error(
-                StatusRuntimeException(Status.INVALID_ARGUMENT.withDescription("invalid type values"))
-            )
-        }
-        r2dbcRepository.findByTypes(thisRequest.type.name.toLowerCase())
-            .timeout(Duration.ofMillis(3000))
-            .switchIfEmpty(Flux.empty())
-            .map { it.toMessage() }
-            .doOnError { err -> log.error("failed to select from test table. type=${thisRequest.type}", err) }
-            .onErrorResume { err ->
-                log.error("handle errors!!", err)
-                val status = when {
-                    err is IllegalArgumentException -> Status.INVALID_ARGUMENT.withDescription("hoge")
-                    else -> Status.UNKNOWN.withDescription(err.message)
-                }
-                Mono.error(StatusRuntimeException(status))
+    ): Mono<SelectResponse> = request
+            .handle { r, sink: SynchronousSink<SelectRequest> ->
+                if (r.type != Message.MessageTypes.GENERAL && r.type != Message.MessageTypes.NORMAL)
+                    sink.error(INVALID_ARGUMENT.withDescription("'type' parameter ignored")
+                                   .asRuntimeException())
+                else sink.next(r)
             }
-            .collectList()
-            .map { items ->
-                SelectResponse.newBuilder()
-                    .setFilterType(thisRequest.type)
-                    .addAllItems(items)
-                    .build()
-            }
-    }
+            .flatMap { r ->
+                r2dbcRepository.findByTypes(r.type.name.toLowerCase())
+                    .timeout(Duration.ofMillis(3000))
+                    .switchIfEmpty(Flux.empty())
+                    .doOnError { err ->
+                        log.error(
+                            "Failed to select from test table. type=${r.type}",
+                            err
+                        )
+                    }
+                    .onErrorResume { err ->
+                        val grpcErrorStatus = when (err) {
+                            is IllegalArgumentException -> INVALID_ARGUMENT.withDescription("hoge")
+                            else -> Status.UNKNOWN.withDescription(err.message)
+                        }
+                        log.warn("Handle errors, message=${err.message}, grpc.status=${grpcErrorStatus}", err)
+                        Mono.error(grpcErrorStatus.asRuntimeException())
+                    }
+                    .map { entity -> entity.toMessage() }
+                    .collectList()
+                    .map { messages ->
+                        SelectResponse.newBuilder()
+                            .setFilterType(r.type)
+                            .addAllItems(messages)
+                            .build()
+                    }
+            } // request.flatMap
 }

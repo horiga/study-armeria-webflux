@@ -5,7 +5,7 @@ plugins {
 	id("idea")
 	id("java")
 
-	id("org.springframework.boot") version "2.2.5.RELEASE"
+	id("org.springframework.boot") version "2.2.6.RELEASE"
 	id("io.spring.dependency-management") version "1.0.9.RELEASE"
 	id("com.google.protobuf") version "0.8.11"
 
@@ -38,10 +38,10 @@ dependencies {
 
 	// mysql
 	implementation("com.github.jasync-sql:jasync-r2dbc-mysql:1.0.14")
-	implementation("io.r2dbc:r2dbc-pool:0.8.1.RELEASE")
+	implementation("io.r2dbc:r2dbc-pool:0.8.2.RELEASE")
 
 	// Reactor
-	implementation("io.projectreactor.addons:reactor-extra:3.3.2.RELEASE")
+	implementation("io.projectreactor.addons:reactor-extra:3.3.3.RELEASE")
 	implementation("io.projectreactor.kotlin:reactor-kotlin-extensions:1.0.2.RELEASE")
 	implementation("com.salesforce.servicelibs:reactor-grpc-stub:1.0.0")
 
@@ -65,8 +65,8 @@ dependencies {
 dependencyManagement {
 	imports {
 		mavenBom("org.springframework.boot.experimental:spring-boot-bom-r2dbc:0.1.0.M3")
-		mavenBom("com.linecorp.armeria:armeria-bom:0.98.3")
-		mavenBom("io.netty:netty-bom:4.1.45.Final")
+		mavenBom("com.linecorp.armeria:armeria-bom:0.99.4")
+//		mavenBom("io.netty:netty-bom:4.1.45.Final")
 	}
 }
 
