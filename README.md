@@ -109,28 +109,38 @@ class HelloService: ReactorHelloServiceGrpc.HelloServiceImplBase() {
 class TestService(
     val r2dbcRepository: TestR2dbcRepository
 ) : ReactorTestServiceGrpc.TestServiceImplBase() {
-    companion object {
-        val log = LoggerFactory.getLogger(TestService::class.java)!!
-    }
 
+    @Throws(StatusRuntimeException::class)
     override fun select(
         request: Mono<SelectRequest>
-    ): Mono<SelectResponse> = request.flatMap { thisRequest ->
-        r2dbcRepository.findByTypes(thisRequest.type)
-            .timeout(Duration.ofMillis(3000))
-            .doOnError { err -> log.error("failed to select from test table. type=${thisRequest.type}", err) }
-            .onErrorResume { err ->
-                log.warn("onErrorResume, r2dbc, findByTypes", err)
-                Flux.empty()
-            }
-            .map { it.toMessage() }
-            .collectList()
-            .map { items ->
-                SelectResponse.newBuilder()
-                    .setFilterType(thisRequest.type)
-                    .addAllItems(items)
-                    .build()
-            }
-    }
+    ): Mono<SelectResponse> = request
+        .handle { r, sink: SynchronousSink<SelectRequest> ->
+            if (r.type != Message.MessageTypes.GENERAL && r.type != Message.MessageTypes.NORMAL)
+                sink.error(
+                    INVALID_ARGUMENT.withDescription("'type' parameter ignored")
+                        .asRuntimeException()
+                )
+            else sink.next(r)
+        }
+        .flatMap { r ->
+            r2dbcRepository.findByTypes(r.type.name.toLowerCase())
+                .timeout(Duration.ofMillis(3000))
+                .switchIfEmpty(Flux.empty())
+                .onErrorResume { err ->
+                    val grpcErrorStatus = when (err) {
+                        is IllegalArgumentException -> INVALID_ARGUMENT.withDescription("<test>")
+                        else -> UNKNOWN.withDescription(err.message)
+                    }
+                    Mono.error(grpcErrorStatus.asRuntimeException())
+                }
+                .map { entity -> entity.toMessage() }
+                .collectList()
+                .map { messages ->
+                    SelectResponse.newBuilder()
+                        .setFilterType(r.type)
+                        .addAllItems(messages)
+                        .build()
+                }
+        } // request.flatMap
 }
 ```
