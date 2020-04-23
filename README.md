@@ -110,7 +110,6 @@ class TestService(
     val r2dbcRepository: TestR2dbcRepository
 ) : ReactorTestServiceGrpc.TestServiceImplBase() {
 
-    @Throws(StatusRuntimeException::class)
     override fun select(
         request: Mono<SelectRequest>
     ): Mono<SelectResponse> = request
