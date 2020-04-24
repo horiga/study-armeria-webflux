@@ -5,6 +5,7 @@ enum MessageTypes {
     UNSPECIFIED = 0;
     GENERAL     = 1;
     NORMAL      = 2;
+    URGENT      = 3;
 }
 
 message TestMessage {

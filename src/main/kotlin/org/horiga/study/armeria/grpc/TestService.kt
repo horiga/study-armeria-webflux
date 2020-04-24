@@ -19,11 +19,19 @@ class TestService(
     val r2dbcRepository: TestR2dbcRepository
 ) : ReactorTestServiceGrpc.TestServiceImplBase() {
 
+    companion object {
+        val availableMessageTypes = setOf(
+            Message.MessageTypes.GENERAL,
+            Message.MessageTypes.NORMAL,
+            Message.MessageTypes.URGENT
+        )
+    }
+
     override fun select(
         request: Mono<SelectRequest>
     ): Mono<SelectResponse> = request
         .handle { r, sink: SynchronousSink<SelectRequest> ->
-            if (r.type != Message.MessageTypes.GENERAL && r.type != Message.MessageTypes.NORMAL)
+            if (!availableMessageTypes.contains(r.type))
                 sink.error(
                     INVALID_ARGUMENT.withDescription("'type' parameter ignored")
                         .asRuntimeException()

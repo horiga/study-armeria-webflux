@@ -26,17 +26,12 @@ repositories {
 
 dependencies {
 
-	annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
-
 	// Armeria
 	implementation("com.linecorp.armeria:armeria-spring-boot-webflux-starter")
 	implementation("com.linecorp.armeria:armeria-grpc")
 
-	// spring-boot
-	// implementation("org.springframework.boot:spring-boot-starter-webflux") - Note: armeria-spring-boot-webflux
+	// R2DBC, MySQL
 	implementation("org.springframework.boot.experimental:spring-boot-starter-data-r2dbc")
-
-	// mysql
 	implementation("com.github.jasync-sql:jasync-r2dbc-mysql:1.0.14")
 	implementation("io.r2dbc:r2dbc-pool:0.8.2.RELEASE")
 
@@ -45,10 +40,8 @@ dependencies {
 	implementation("io.projectreactor.kotlin:reactor-kotlin-extensions:1.0.2.RELEASE")
 	implementation("com.salesforce.servicelibs:reactor-grpc-stub:1.0.0")
 
-	// Misc
-	implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
-
 	// Kotlin
+	implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
 	implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
 	implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
@@ -66,7 +59,6 @@ dependencyManagement {
 	imports {
 		mavenBom("org.springframework.boot.experimental:spring-boot-bom-r2dbc:0.1.0.M3")
 		mavenBom("com.linecorp.armeria:armeria-bom:0.99.4")
-//		mavenBom("io.netty:netty-bom:4.1.45.Final")
 	}
 }
 
