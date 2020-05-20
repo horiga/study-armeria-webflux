@@ -5,12 +5,12 @@ plugins {
 	id("idea")
 	id("java")
 
-	id("org.springframework.boot") version "2.2.6.RELEASE"
+	id("org.springframework.boot") version "2.3.0.RELEASE"
 	id("io.spring.dependency-management") version "1.0.9.RELEASE"
 	id("com.google.protobuf") version "0.8.11"
 
-	kotlin("jvm") version "1.3.61"
-	kotlin("plugin.spring") version "1.3.61"
+	kotlin("jvm") version "1.3.72"
+	kotlin("plugin.spring") version "1.3.72"
 
 }
 
@@ -33,9 +33,8 @@ dependencies {
 	annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
 	// R2DBC, MySQL
-	implementation("org.springframework.boot.experimental:spring-boot-starter-data-r2dbc")
-	implementation("com.github.jasync-sql:jasync-r2dbc-mysql:1.0.14")
-	implementation("io.r2dbc:r2dbc-pool:0.8.2.RELEASE")
+	implementation("org.springframework.boot:spring-boot-starter-data-r2dbc")
+	implementation("com.github.jasync-sql:jasync-r2dbc-mysql:1.0.19")
 
 	// Reactor
 	implementation("io.projectreactor.addons:reactor-extra:3.3.3.RELEASE")
@@ -62,8 +61,7 @@ dependencies {
 
 dependencyManagement {
 	imports {
-		mavenBom("org.springframework.boot.experimental:spring-boot-bom-r2dbc:0.1.0.M3")
-		mavenBom("com.linecorp.armeria:armeria-bom:0.99.4")
+		mavenBom("com.linecorp.armeria:armeria-bom:0.99.5")
 	}
 }
 
