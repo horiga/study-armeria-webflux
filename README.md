@@ -29,6 +29,8 @@ INFO 65730 --- [-worker-nio-2-1] c.l.a.i.common.JavaVersionSpecific       : Usin
 
 - execute grpc
 
+> grpcurl - https://github.com/fullstorydev/grpcurl
+
 ```bash
 $ grpcurl -plaintext -d '{"message":"horiga"}' 127.0.0.1:8080 org.horiga.study.armeria.grpc.v1.HelloService/SayHello
   {
