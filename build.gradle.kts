@@ -30,6 +30,8 @@ dependencies {
 	implementation("com.linecorp.armeria:armeria-spring-boot-webflux-starter")
 	implementation("com.linecorp.armeria:armeria-grpc")
 
+	annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
+
 	// R2DBC, MySQL
 	implementation("org.springframework.boot.experimental:spring-boot-starter-data-r2dbc")
 	implementation("com.github.jasync-sql:jasync-r2dbc-mysql:1.0.14")
@@ -53,6 +55,9 @@ dependencies {
 	testImplementation("org.springframework.boot.experimental:spring-boot-test-autoconfigure-r2dbc")
 	testImplementation("io.projectreactor:reactor-test")
 	testImplementation("io.mockk:mockk:1.9.3")
+
+	testImplementation("org.testcontainers:testcontainers:1.14.1")
+	testImplementation("org.testcontainers:junit-jupiter:1.14.1")
 }
 
 dependencyManagement {

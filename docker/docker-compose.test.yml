@@ -1,0 +1,15 @@
+version: '2'
+services:
+  mysql:
+    image: mysql:5.7
+    environment:
+      MYSQL_DATABASE: demo
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_USER: test
+      MYSQL_PASSWORD: test
+    ports:
+      - 3306
+    hostname: mysqldocker
+    volumes:
+      - ./mysql/ddl:/docker-entrypoint-initdb.d
+      - ./mysql/conf:/etc/mysql
