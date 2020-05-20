@@ -1,8 +1,7 @@
 study-armeria-webflux
 =====
 
-[Armeria](https://github.com/line/armeria) と spring-boot を使ったgRPCサーバのサンプルコード
-
+example project that gRPC server with [Armeria](https://github.com/line/armeria) and spring-boot.
 
 ### How to run
 - build proto
