@@ -58,7 +58,7 @@ $ docker-compose up
 - execute grpc
 
 ```bash
-$ grpcurl -plaintext -d '{"type":"general"}' 127.0.0.1:8080 org.horiga.study.armeria.grpc.v1.TestService/Select
+$ grpcurl -plaintext -d '{"type":"GENERAL"}' 127.0.0.1:8080 org.horiga.study.armeria.grpc.v1.TestService/Select
 {
   "filter_type": "general",
   "items": [
