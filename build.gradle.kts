@@ -34,7 +34,7 @@ dependencies {
 
 	// R2DBC, MySQL
 	implementation("org.springframework.boot:spring-boot-starter-data-r2dbc")
-	implementation("com.github.jasync-sql:jasync-r2dbc-mysql:1.0.19")
+	implementation("com.github.jasync-sql:jasync-r2dbc-mysql:1.1.3")
 
 	// Reactor
 	implementation("io.projectreactor.addons:reactor-extra:3.3.3.RELEASE")
@@ -51,10 +51,8 @@ dependencies {
 	testImplementation("org.springframework.boot:spring-boot-starter-test") {
 		exclude(group = "org.junit.vintage", module = "junit-vintage-engine")
 	}
-	//testImplementation("org.springframework.boot.experimental:spring-boot-test-autoconfigure-r2dbc")
 	testImplementation("io.projectreactor:reactor-test")
 	testImplementation("io.mockk:mockk:1.9.3")
-
 	testImplementation("org.testcontainers:testcontainers:1.14.1")
 	testImplementation("org.testcontainers:junit-jupiter:1.14.1")
 }

@@ -54,12 +54,12 @@ $ docker-compose up
 > spring.r2dbc.pool.max-size=50
 > spring.r2dbc.pool.max-idle-time=30s
 > spring.r2dbc.pool.validation-query=SELECT 1
-> ``` 
+> ```
 
 - execute grpc
 
 ```bash
-$ grpcurl -plaintext -d '{"type":"GENERAL"}' 127.0.0.1:8080 org.horiga.study.armeria.grpc.v1.TestService/Select
+$ grpcurl -plaintext -d '{"type":"GENERAL"}' 127.0.0.1:8080 org.horiga.study.armeria.grpc.v1.R2dbcService/Select
 {
   "filter_type": "general",
   "items": [
@@ -107,40 +107,48 @@ class HelloService: ReactorHelloServiceGrpc.HelloServiceImplBase() {
 
 ```Kotlin
 @Service
-class TestService(
-    val r2dbcRepository: TestR2dbcRepository
-) : ReactorTestServiceGrpc.TestServiceImplBase() {
+class R2dbcService(
+        val r2dbcRepository: TestR2dbcRepository
+) : ReactorR2dbcServiceGrpc.R2dbcServiceImplBase() {
+
+    companion object {
+        val availableMessageTypes = setOf(
+                MessageTypes.GENERAL,
+                MessageTypes.NORMAL,
+                MessageTypes.URGENT
+        )
+    }
 
     override fun select(
-        request: Mono<SelectRequest>
+            request: Mono<SelectRequest>
     ): Mono<SelectResponse> = request
-        .handle { r, sink: SynchronousSink<SelectRequest> ->
-            if (r.type != Message.MessageTypes.GENERAL && r.type != Message.MessageTypes.NORMAL)
-                sink.error(
-                    INVALID_ARGUMENT.withDescription("'type' parameter ignored")
-                        .asRuntimeException()
-                )
-            else sink.next(r)
-        }
-        .flatMap { r ->
-            r2dbcRepository.findByTypes(r.type.name.toLowerCase())
-                .timeout(Duration.ofMillis(3000))
-                .switchIfEmpty(Flux.empty())
-                .onErrorResume { err ->
-                    val grpcErrorStatus = when (err) {
-                        is IllegalArgumentException -> INVALID_ARGUMENT.withDescription("<test>")
-                        else -> UNKNOWN.withDescription(err.message)
-                    }
-                    Mono.error(grpcErrorStatus.asRuntimeException())
-                }
-                .map { entity -> entity.toMessage() }
-                .collectList()
-                .map { messages ->
-                    SelectResponse.newBuilder()
-                        .setFilterType(r.type)
-                        .addAllItems(messages)
-                        .build()
-                }
-        } // request.flatMap
+            .handle { r, sink: SynchronousSink<SelectRequest> ->
+                if (!availableMessageTypes.contains(r.type))
+                    sink.error(
+                            INVALID_ARGUMENT.withDescription("'type' parameter ignored")
+                                    .asRuntimeException()
+                    )
+                else sink.next(r)
+            }
+            .flatMap { r ->
+                r2dbcRepository.findByTypes(r.type.name.toLowerCase())
+                        .timeout(Duration.ofMillis(3000))
+                        .switchIfEmpty(Flux.empty())
+                        .onErrorResume { err ->
+                            val grpcErrorStatus = when (err) {
+                                is IllegalArgumentException -> INVALID_ARGUMENT.withDescription("<test>")
+                                else -> UNKNOWN.withDescription(err.message)
+                            }
+                            Mono.error(grpcErrorStatus.asRuntimeException())
+                        }
+                        .map { entity -> entity.toMessage() }
+                        .collectList()
+                        .map { messages ->
+                            SelectResponse.newBuilder()
+                                    .setFilterType(r.type)
+                                    .addAllItems(messages)
+                                    .build()
+                        }
+            } // request.flatMap
 }
 ```
