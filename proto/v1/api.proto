@@ -1,10 +1,12 @@
 syntax = "proto3";
 package org.horiga.study.armeria.grpc.v1;
 
-import "v1/message.proto";
-
 service HelloService {
     rpc SayHello(HelloRequest) returns (HelloResponse);
+}
+
+service R2dbcService {
+    rpc Select(SelectRequest) returns (SelectResponse);
 }
 
 message HelloRequest {
@@ -15,10 +17,17 @@ message HelloResponse {
     string message = 1;
 }
 
-// -- user
+enum MessageTypes {
+    UNSPECIFIED = 0;
+    GENERAL     = 1;
+    NORMAL      = 2;
+    URGENT      = 3;
+}
 
-service TestService {
-    rpc Select(SelectRequest) returns (SelectResponse);
+message SelectItem {
+    string id = 1;
+    string name = 2;
+    MessageTypes type = 3;
 }
 
 message SelectRequest {
@@ -27,5 +36,5 @@ message SelectRequest {
 
 message SelectResponse {
     MessageTypes filter_type = 1;
-    repeated TestMessage items = 2;
+    repeated SelectItem items = 2;
 }

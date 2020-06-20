@@ -1,6 +1,7 @@
 package org.horiga.study.armeria.repository
 
-import org.horiga.study.armeria.grpc.v1.Message
+import org.horiga.study.armeria.grpc.v1.Api.MessageTypes
+import org.horiga.study.armeria.grpc.v1.Api.SelectItem
 import org.springframework.data.annotation.Id
 import org.springframework.data.r2dbc.repository.Query
 import org.springframework.data.r2dbc.repository.R2dbcRepository
@@ -12,18 +13,18 @@ import reactor.core.publisher.Flux
 
 @Table("test")
 data class Test(
-    @Id
-    var id: String,
-    @Column("name")
-    var name: String,
-    @Column("type")
-    var type: String
+        @Id
+        var id: String,
+        @Column("name")
+        var name: String,
+        @Column("type")
+        var type: String
 ) {
-    fun toMessage() = Message.TestMessage.newBuilder()
-        .setId(this.id)
-        .setName(this.name)
-        .setType(Message.MessageTypes.valueOf(this.type.toUpperCase()))
-        .build()!!
+    fun toMessage() = SelectItem.newBuilder()
+            .setId(this.id)
+            .setName(this.name)
+            .setType(MessageTypes.valueOf(this.type.toUpperCase()))
+            .build()!!
 }
 
 @Repository
